@@ -1,0 +1,133 @@
+test-koneksi.html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Kirim Data ke Google Sheets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8fafc;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        .kotak-form {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            background-color: #10b981;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #059669;
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+        #pesan-status {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="kotak-form">
+        <h2 style="margin-top: 0; color: #1e293b;">Catat Pengeluaran Test</h2>
+        <p style="font-size: 12px; color: #64748b;">Data ini akan dikirim ke Google Sheets Anda.</p>
+
+        <form id="formTest">
+            <label style="font-size: 12px; font-weight: bold;">Tanggal</label>
+            <input type="date" id="inputDate" required>
+
+            <label style="font-size: 12px; font-weight: bold;">Nominal (Rp)</label>
+            <input type="number" id="inputAmount" placeholder="Contoh: 150000" required>
+
+            <label style="font-size: 12px; font-weight: bold;">Catatan</label>
+            <input type="text" id="inputNote" placeholder="Contoh: Beli Kopi" required>
+
+            <button type="submit" id="tombolKirim">Kirim Data ke Sheets 🚀</button>
+        </form>
+
+        <div id="pesan-status"></div>
+    </div>
+
+    <script>
+        // MASUKKAN LINK APPS SCRIPT ANDA DI SINI
+        // Catatan: Akan lebih baik jika menggunakan link berakhiran /exec
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT7fYGyQvmhC4pzWfyZYA-nf_LbKDSC4je1xBTcGo/dev";
+
+        document.getElementById('formTest').addEventListener('submit', function(event) {
+            event.preventDefault(); // Mencegah halaman refresh saat tombol diklik
+
+            const tombol = document.getElementById('tombolKirim');
+            const statusBox = document.getElementById('pesan-status');
+
+            // 1. Susun data sesuai dengan format yang diminta Apps Script Anda sebelumnya
+            const dataYangDikirim = {
+                id: "test_" + Date.now(),
+                date: document.getElementById('inputDate').value,
+                type: "expense", // Otomatis diset pengeluaran untuk test
+                category: "Test Bebas",
+                amount: document.getElementById('inputAmount').value,
+                note: document.getElementById('inputNote').value
+            };
+
+            // 2. Ubah tampilan tombol saat proses pengiriman
+            tombol.innerText = "Mengirim...";
+            tombol.disabled = true;
+            statusBox.innerText = "Mencoba terhubung ke server...";
+            statusBox.style.color = "#d97706"; // Warna oranye
+
+            // 3. Proses kirim menggunakan Fetch API
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(dataYangDikirim)
+            })
+            .then(response => response.text())
+            .then(result => {
+                // Jika berhasil masuk
+                statusBox.innerText = "✅ Berhasil! Cek Google Sheets Anda.";
+                statusBox.style.color = "#10b981"; // Warna hijau
+                document.getElementById('formTest').reset(); // Kosongkan form
+            })
+            .catch(error => {
+                // Jika gagal (Misalnya karena pakai link /dev atau masalah akses)
+                console.error("Error Detail:", error);
+                statusBox.innerText = "❌ Gagal Terkirim. (Kemungkinan karena link masih /dev. Harus ganti ke /exec)";
+                statusBox.style.color = "#ef4444"; // Warna merah
+            })
+            .finally(() => {
+                // Kembalikan tombol seperti semula setelah selesai
+                tombol.innerText = "Kirim Data ke Sheets 🚀";
+                tombol.disabled = false;
+            });
+        });
+    </script>
+
+</body>
+</html>
